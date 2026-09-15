@@ -1,0 +1,2360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ludo Dice</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+:root {
+    --bg: #070812;
+    --panel: rgba(16, 18, 39, 0.82);
+    --panel-border: rgba(255,255,255,.12);
+    --text: #f5f7ff;
+    --muted: #9298b7;
+
+    --red: #ff3038;
+    --yellow: #ffc928;
+    --green: #00d66b;
+    --blue: #2787ff;
+    --orange: #ff7a18;
+    --purple: #9b3dff;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    font-family:
+        Inter,
+        ui-sans-serif,
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+
+    color: var(--text);
+    background:
+        radial-gradient(circle at 15% 20%, rgba(255,0,60,.15), transparent 30%),
+        radial-gradient(circle at 85% 20%, rgba(0,100,255,.16), transparent 30%),
+        radial-gradient(circle at 50% 100%, rgba(150,0,255,.12), transparent 35%),
+        #070812;
+
+    overflow-x: hidden;
+}
+
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+
+    background-image:
+        radial-gradient(circle, rgba(255,255,255,.7) 1px, transparent 1px);
+
+    background-size: 120px 120px;
+    opacity: .08;
+}
+
+button,
+select {
+    font: inherit;
+}
+
+.app {
+    width: min(1500px, 100%);
+    min-height: 100vh;
+    margin: auto;
+    padding: 20px;
+    display: grid;
+    grid-template-columns: 330px 1fr;
+    gap: 18px;
+}
+
+/* ================================
+   SIDEBAR
+================================ */
+
+.sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.logo {
+    height: 76px;
+    display: flex;
+    align-items: center;
+    padding: 0 18px;
+
+    border-radius: 18px;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(255,255,255,.08),
+            rgba(255,255,255,.02)
+        );
+
+    border: 1px solid rgba(255,255,255,.1);
+
+    box-shadow:
+        0 20px 60px rgba(0,0,0,.35),
+        inset 0 1px rgba(255,255,255,.08);
+}
+
+.logo-dice {
+    font-size: 34px;
+    margin-right: 12px;
+}
+
+.logo span {
+    font-size: 28px;
+    font-weight: 900;
+    letter-spacing: -1px;
+}
+
+.logo .ludo {
+    color: white;
+}
+
+.logo .dice-text {
+    background: linear-gradient(
+        90deg,
+        #ff3131,
+        #ffc928,
+        #00dc70,
+        #338cff,
+        #9c3cff
+    );
+
+    -webkit-background-clip: text;
+    color: transparent;
+}
+
+.panel {
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    border-radius: 20px;
+    padding: 20px;
+
+    backdrop-filter: blur(18px);
+
+    box-shadow:
+        0 20px 60px rgba(0,0,0,.25),
+        inset 0 1px rgba(255,255,255,.04);
+}
+
+.panel-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    margin-bottom: 18px;
+
+    color: #b9a7ff;
+
+    font-size: 17px;
+    font-weight: 800;
+    letter-spacing: .5px;
+    text-transform: uppercase;
+}
+
+.setting-label {
+    display: block;
+    margin-bottom: 8px;
+
+    font-size: 14px;
+    color: var(--muted);
+}
+
+.player-control {
+    display: grid;
+    grid-template-columns: 52px 1fr 52px;
+    height: 52px;
+
+    margin-bottom: 20px;
+
+    border: 1px solid rgba(255,255,255,.12);
+    border-radius: 13px;
+    overflow: hidden;
+}
+
+.player-control button {
+    border: 0;
+    color: white;
+    background: rgba(255,255,255,.06);
+    font-size: 22px;
+    cursor: pointer;
+    transition: .2s;
+}
+
+.player-control button:hover {
+    background: rgba(255,255,255,.12);
+}
+
+.player-count {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 20px;
+    font-weight: 800;
+}
+
+.dice-options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.dice-option {
+    padding: 13px 8px;
+
+    border: 1px solid rgba(255,255,255,.12);
+    border-radius: 12px;
+
+    background: rgba(255,255,255,.035);
+    color: white;
+
+    cursor: pointer;
+    transition: .2s;
+}
+
+.dice-option.active {
+    border-color: #407cff;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(42,104,255,.35),
+            rgba(107,48,255,.25)
+        );
+
+    box-shadow:
+        0 0 25px rgba(54,105,255,.2);
+}
+
+.start-button {
+    width: 100%;
+    height: 55px;
+
+    border: 0;
+    border-radius: 15px;
+
+    color: white;
+    font-weight: 900;
+    font-size: 15px;
+
+    cursor: pointer;
+
+    background:
+        linear-gradient(
+            100deg,
+            #ff3038,
+            #a735ff,
+            #247cff
+        );
+
+    box-shadow:
+        0 10px 35px rgba(104,49,255,.25);
+
+    transition: .25s;
+}
+
+.start-button:hover {
+    transform: translateY(-2px);
+    box-shadow:
+        0 15px 40px rgba(104,49,255,.4);
+}
+
+.sound-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 12px 0;
+}
+
+.toggle {
+    width: 48px;
+    height: 27px;
+
+    padding: 3px;
+
+    border-radius: 20px;
+    border: 0;
+
+    background: #303449;
+
+    cursor: pointer;
+}
+
+.toggle span {
+    display: block;
+
+    width: 21px;
+    height: 21px;
+
+    border-radius: 50%;
+    background: white;
+
+    transition: .2s;
+}
+
+.toggle.active {
+    background: #277cff;
+}
+
+.toggle.active span {
+    transform: translateX(21px);
+}
+
+.rules {
+    color: #c7c9da;
+    font-size: 13px;
+    line-height: 1.7;
+}
+
+.rules strong {
+    color: white;
+}
+
+/* ================================
+   MAIN
+================================ */
+
+.main {
+    min-width: 0;
+}
+
+.topbar {
+    min-height: 76px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 20px;
+
+    padding: 15px 24px;
+
+    border-radius: 18px;
+
+    background: rgba(14,16,36,.72);
+    border: 1px solid rgba(255,255,255,.11);
+
+    backdrop-filter: blur(15px);
+
+    margin-bottom: 20px;
+}
+
+.players {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.player-dot {
+    display: inline-block;
+
+    width: 12px;
+    height: 12px;
+
+    border-radius: 50%;
+
+    margin-right: 7px;
+}
+
+.player-name {
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.dice-info {
+    text-align: right;
+    color: var(--muted);
+}
+
+.dice-info strong {
+    display: block;
+    color: white;
+    font-size: 18px;
+    margin-top: 3px;
+}
+
+/* ================================
+   TURN
+================================ */
+
+.turn-banner {
+    width: min(390px, 90%);
+    margin: 0 auto 25px;
+
+    padding: 16px 25px;
+
+    text-align: center;
+
+    border-radius: 100px;
+
+    background: rgba(16,18,39,.85);
+
+    border: 1px solid var(--current-color);
+
+    box-shadow:
+        0 0 35px color-mix(
+            in srgb,
+            var(--current-color),
+            transparent 70%
+        );
+}
+
+.turn-small {
+    color: var(--muted);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.turn-player {
+    margin-top: 3px;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 9px;
+
+    font-size: 25px;
+    font-weight: 900;
+}
+
+.turn-dot {
+    width: 17px;
+    height: 17px;
+    border-radius: 50%;
+    background: var(--current-color);
+    box-shadow: 0 0 15px var(--current-color);
+}
+
+/* ================================
+   GAME AREA
+================================ */
+
+.game-area {
+    min-height: 490px;
+
+    display: grid;
+    grid-template-columns: 160px 1fr 190px;
+    gap: 25px;
+    align-items: center;
+}
+
+.side-card {
+    padding: 18px;
+
+    border-radius: 18px;
+
+    background: rgba(12,14,30,.75);
+    border: 1px solid rgba(255,255,255,.1);
+
+    backdrop-filter: blur(15px);
+}
+
+.side-card-title {
+    font-size: 13px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .7px;
+    color: #aaaec7;
+
+    margin-bottom: 15px;
+}
+
+.six-rule {
+    text-align: center;
+}
+
+.six-circles {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    margin-bottom: 10px;
+}
+
+.six-circle {
+    width: 30px;
+    height: 30px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+
+    background: rgba(255,48,56,.15);
+    border: 1px solid rgba(255,48,56,.6);
+
+    color: #ff5660;
+    font-weight: 900;
+}
+
+.six-circle.active {
+    background: #ff3038;
+    color: white;
+    box-shadow: 0 0 18px rgba(255,48,56,.5);
+}
+
+.six-description {
+    color: #999db7;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+/* ================================
+   DICE
+================================ */
+
+.dice-stage {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    min-height: 310px;
+
+    position: relative;
+
+    perspective: 900px;
+}
+
+.dice-container {
+    display: flex;
+    gap: 35px;
+    justify-content: center;
+    align-items: center;
+}
+
+.die {
+    width: 130px;
+    height: 130px;
+
+    position: relative;
+
+    border-radius: 23px;
+
+    background:
+        linear-gradient(
+            145deg,
+            #ffffff,
+            #dcdce3
+        );
+
+    box-shadow:
+        inset -12px -12px 22px rgba(0,0,0,.12),
+        inset 8px 8px 18px rgba(255,255,255,.9),
+        0 30px 50px rgba(0,0,0,.45);
+
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+
+    padding: 17px;
+
+    transition: transform .2s;
+}
+
+.die::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+
+    border-radius: 23px;
+
+    box-shadow:
+        inset 0 0 0 1px rgba(0,0,0,.08);
+
+    pointer-events: none;
+}
+
+.pip {
+    width: 19px;
+    height: 19px;
+
+    border-radius: 50%;
+
+    background:
+        radial-gradient(
+            circle at 35% 30%,
+            #555,
+            #050505 60%
+        );
+
+    box-shadow:
+        inset 2px 2px 3px rgba(255,255,255,.25),
+        2px 3px 5px rgba(0,0,0,.35);
+
+    align-self: center;
+    justify-self: center;
+
+    opacity: 0;
+}
+
+.die.rolling {
+    animation: diceRoll .85s cubic-bezier(.2,.7,.2,1);
+}
+
+@keyframes diceRoll {
+    0% {
+        transform:
+            rotateX(0)
+            rotateY(0)
+            rotateZ(0)
+            scale(.9);
+    }
+
+    20% {
+        transform:
+            rotateX(180deg)
+            rotateY(120deg)
+            rotateZ(70deg)
+            scale(1.08);
+    }
+
+    45% {
+        transform:
+            rotateX(400deg)
+            rotateY(270deg)
+            rotateZ(160deg)
+            scale(.95);
+    }
+
+    70% {
+        transform:
+            rotateX(600deg)
+            rotateY(430deg)
+            rotateZ(250deg)
+            scale(1.05);
+    }
+
+    100% {
+        transform:
+            rotateX(720deg)
+            rotateY(540deg)
+            rotateZ(360deg)
+            scale(1);
+    }
+}
+
+.roll-hint {
+    position: absolute;
+    bottom: -5px;
+
+    color: #777c9b;
+    font-size: 13px;
+}
+
+/* ================================
+   HISTORY
+================================ */
+
+.history {
+    max-height: 290px;
+    overflow: hidden;
+}
+
+.history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.history-item {
+    display: flex;
+    justify-content: space-between;
+
+    padding: 8px 9px;
+
+    border-radius: 8px;
+
+    background: rgba(255,255,255,.035);
+
+    font-size: 12px;
+}
+
+.history-result {
+    font-weight: 900;
+}
+
+/* ================================
+   STATUS
+================================ */
+
+.status {
+    width: min(560px, 95%);
+    min-height: 64px;
+
+    margin: 0 auto 20px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 12px 20px;
+
+    text-align: center;
+
+    border-radius: 15px;
+
+    background: rgba(255,255,255,.04);
+    border: 1px solid rgba(255,255,255,.08);
+
+    color: #bfc3da;
+}
+
+.status.extra {
+    color: #55e997;
+    border-color: rgba(0,214,107,.4);
+
+    animation: statusPulse 1s ease infinite alternate;
+}
+
+.status.error {
+    color: #ff6870;
+    border-color: rgba(255,48,56,.45);
+}
+
+@keyframes statusPulse {
+    from {
+        box-shadow: 0 0 0 rgba(0,214,107,0);
+    }
+
+    to {
+        box-shadow: 0 0 30px rgba(0,214,107,.12);
+    }
+}
+
+/* ================================
+   ROLL BUTTON
+================================ */
+
+.roll-area {
+    text-align: center;
+}
+
+.roll-button {
+    width: min(430px, 90%);
+    height: 82px;
+
+    border: 0;
+    border-radius: 100px;
+
+    color: white;
+
+    font-size: 21px;
+    font-weight: 900;
+    letter-spacing: .5px;
+
+    cursor: pointer;
+
+    background:
+        linear-gradient(
+            100deg,
+            #ff3238,
+            #c936ff,
+            #277fff
+        );
+
+    box-shadow:
+        0 15px 45px rgba(97,44,255,.3);
+
+    position: relative;
+    overflow: hidden;
+
+    transition:
+        transform .2s,
+        box-shadow .2s;
+}
+
+.roll-button::before {
+    content: "";
+
+    position: absolute;
+    top: 0;
+    left: -100%;
+
+    width: 70%;
+    height: 100%;
+
+    background:
+        linear-gradient(
+            90deg,
+            transparent,
+            rgba(255,255,255,.3),
+            transparent
+        );
+
+    transform: skewX(-20deg);
+
+    animation: shine 3s infinite;
+}
+
+@keyframes shine {
+    0%, 45% {
+        left: -100%;
+    }
+
+    65%, 100% {
+        left: 140%;
+    }
+}
+
+.roll-button:hover {
+    transform: translateY(-3px) scale(1.01);
+
+    box-shadow:
+        0 20px 55px rgba(97,44,255,.45);
+}
+
+.roll-button:active {
+    transform: scale(.97);
+}
+
+.roll-button:disabled {
+    cursor: not-allowed;
+    opacity: .6;
+    transform: none;
+}
+
+.keyboard-hint {
+    margin-top: 10px;
+    color: #777c99;
+    font-size: 12px;
+}
+
+/* ================================
+   PLAYER CARDS
+================================ */
+
+.player-cards {
+    margin-top: 25px;
+
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 10px;
+}
+
+.player-card {
+    padding: 15px 10px;
+
+    min-height: 125px;
+
+    text-align: center;
+
+    border-radius: 15px;
+
+    background: rgba(12,14,30,.75);
+
+    border: 1px solid rgba(255,255,255,.09);
+
+    transition: .3s;
+}
+
+.player-card.active {
+    border-color: var(--player-color);
+
+    box-shadow:
+        0 0 25px color-mix(
+            in srgb,
+            var(--player-color),
+            transparent 75%
+        );
+
+    transform: translateY(-5px);
+}
+
+.pawn {
+    width: 37px;
+    height: 37px;
+
+    margin: 0 auto 8px;
+
+    position: relative;
+
+    border-radius: 50% 50% 45% 45%;
+
+    background:
+        radial-gradient(
+            circle at 35% 25%,
+            rgba(255,255,255,.55),
+            transparent 20%
+        ),
+        var(--player-color);
+
+    box-shadow:
+        inset -5px -7px 9px rgba(0,0,0,.25),
+        0 7px 12px rgba(0,0,0,.35);
+}
+
+.pawn::after {
+    content: "";
+
+    position: absolute;
+
+    left: -4px;
+    right: -4px;
+    bottom: -5px;
+
+    height: 10px;
+
+    border-radius: 50%;
+
+    background: var(--player-color);
+
+    box-shadow:
+        inset 0 -3px 4px rgba(0,0,0,.25);
+}
+
+.player-card-name {
+    font-size: 14px;
+    font-weight: 800;
+}
+
+.six-count {
+    margin-top: 7px;
+
+    color: #858aa7;
+    font-size: 11px;
+}
+
+.six-count strong {
+    color: var(--player-color);
+    font-size: 18px;
+}
+
+/* ================================
+   FOOTER
+================================ */
+
+.footer {
+    margin-top: 18px;
+
+    padding: 13px;
+
+    text-align: center;
+
+    color: #737894;
+    font-size: 12px;
+
+    border-radius: 13px;
+
+    background: rgba(255,255,255,.025);
+    border: 1px solid rgba(255,255,255,.06);
+}
+
+/* ================================
+   RESPONSIVE
+================================ */
+
+@media (max-width: 1100px) {
+    .app {
+        grid-template-columns: 280px 1fr;
+    }
+
+    .game-area {
+        grid-template-columns: 1fr;
+    }
+
+    .side-card {
+        display: none;
+    }
+
+    .player-cards {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 760px) {
+    .app {
+        display: block;
+        padding: 10px;
+    }
+
+    .sidebar {
+        margin-bottom: 15px;
+    }
+
+    .sidebar .panel:not(:first-of-type) {
+        display: none;
+    }
+
+    .logo {
+        height: 62px;
+    }
+
+    .topbar {
+        padding: 14px;
+        align-items: flex-start;
+    }
+
+    .players {
+        gap: 8px 12px;
+    }
+
+    .player-name {
+        font-size: 12px;
+    }
+
+    .dice-info {
+        font-size: 11px;
+    }
+
+    .dice-info strong {
+        font-size: 15px;
+    }
+
+    .die {
+        width: 105px;
+        height: 105px;
+    }
+
+    .pip {
+        width: 15px;
+        height: 15px;
+    }
+
+    .dice-container {
+        gap: 18px;
+    }
+
+    .player-cards {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 430px) {
+    .turn-player {
+        font-size: 21px;
+    }
+
+    .die {
+        width: 90px;
+        height: 90px;
+        padding: 12px;
+        border-radius: 17px;
+    }
+
+    .pip {
+        width: 13px;
+        height: 13px;
+    }
+
+    .roll-button {
+        height: 68px;
+        font-size: 17px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+    <!-- ================= SIDEBAR ================= -->
+
+    <aside class="sidebar">
+
+        <div class="logo">
+            <div class="logo-dice">🎲</div>
+            <span>
+                <span class="ludo">LUDO</span>
+                <span class="dice-text"> DICE</span>
+            </span>
+        </div>
+
+        <div class="panel">
+
+            <div class="panel-title">
+                ⚙️ Setup Game
+            </div>
+
+            <label class="setting-label">
+                How many players?
+            </label>
+
+            <div class="player-control">
+
+                <button id="minusPlayers">−</button>
+
+                <div class="player-count" id="playerCount">
+                    2
+                </div>
+
+                <button id="plusPlayers">+</button>
+
+            </div>
+
+            <label class="setting-label">
+                How many dice?
+            </label>
+
+            <div class="dice-options">
+
+                <button
+                    class="dice-option active"
+                    data-dice="1">
+                    🎲 1 Dice
+                </button>
+
+                <button
+                    class="dice-option"
+                    data-dice="2">
+                    🎲🎲 2 Dice
+                </button>
+
+            </div>
+
+            <button
+                class="start-button"
+                id="startGame">
+                ▶ START GAME
+            </button>
+
+        </div>
+
+        <div class="panel">
+
+            <div class="panel-title">
+                🔊 Settings
+            </div>
+
+            <div class="sound-row">
+
+                <span>
+                    Dice Sound
+                </span>
+
+                <button
+                    class="toggle active"
+                    id="soundToggle">
+                    <span></span>
+                </button>
+
+            </div>
+
+        </div>
+
+        <div class="panel rules">
+
+            <div class="panel-title">
+                ❔ How To Play
+            </div>
+
+            <div>
+                🎲 Roll the dice and move your pieces.
+            </div>
+
+            <div>
+                ⭐ Get a <strong>6</strong> to roll again.
+            </div>
+
+            <div>
+                ⚠️ Roll a <strong>6 three times</strong> in a row
+                and your turn is skipped.
+            </div>
+
+            <div>
+                🏆 First player to finish wins!
+            </div>
+
+        </div>
+
+    </aside>
+
+
+    <!-- ================= MAIN ================= -->
+
+    <main class="main">
+
+        <div class="topbar">
+
+            <div class="players" id="playersLegend">
+                <!-- generated -->
+            </div>
+
+            <div class="dice-info">
+                Dice
+                <strong id="diceInfo">
+                    1 Dice
+                </strong>
+            </div>
+
+        </div>
+
+
+        <div
+            class="turn-banner"
+            id="turnBanner">
+
+            <div class="turn-small">
+                Player Turn
+            </div>
+
+            <div class="turn-player">
+
+                <span
+                    class="turn-dot"
+                    id="turnDot">
+                </span>
+
+                <span id="turnName">
+                    Red
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <section class="game-area">
+
+            <!-- SIX RULE -->
+
+            <div class="side-card six-rule">
+
+                <div class="side-card-title">
+                    3 Sixes Rule
+                </div>
+
+                <div class="six-circles">
+
+                    <div
+                        class="six-circle"
+                        id="six1">
+                        6
+                    </div>
+
+                    <div
+                        class="six-circle"
+                        id="six2">
+                        6
+                    </div>
+
+                    <div
+                        class="six-circle"
+                        id="six3">
+                        6
+                    </div>
+
+                </div>
+
+                <div class="six-description">
+                    Three 6s in a row
+                    and your turn is lost.
+                </div>
+
+            </div>
+
+
+            <!-- DICE -->
+
+            <div class="dice-stage">
+
+                <div
+                    class="dice-container"
+                    id="diceContainer">
+                </div>
+
+                <div class="roll-hint">
+                    Your luck is waiting...
+                </div>
+
+            </div>
+
+
+            <!-- HISTORY -->
+
+            <div class="side-card history">
+
+                <div class="side-card-title">
+                    Roll History
+                </div>
+
+                <div
+                    class="history-list"
+                    id="historyList">
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- STATUS -->
+
+        <div
+            class="status"
+            id="status">
+
+            Press the button or SPACE / ENTER to roll.
+        </div>
+
+
+        <!-- ROLL -->
+
+        <div class="roll-area">
+
+            <button
+                class="roll-button"
+                id="rollButton">
+
+                🎲 &nbsp; ROLL DICE
+
+            </button>
+
+            <div class="keyboard-hint">
+                Press SPACE or ENTER to roll
+            </div>
+
+        </div>
+
+
+        <!-- PLAYER CARDS -->
+
+        <div
+            class="player-cards"
+            id="playerCards">
+        </div>
+
+
+        <div class="footer">
+            Let the luck roll! 🎲 &nbsp; May the best player win! 🏆
+        </div>
+
+    </main>
+
+</div>
+
+
+<script>
+
+/* =========================================================
+   GAME CONFIGURATION
+========================================================= */
+
+const playerColors = [
+    {
+        name: "Red",
+        color: "#ff3038"
+    },
+    {
+        name: "Yellow",
+        color: "#ffc928"
+    },
+    {
+        name: "Green",
+        color: "#00d66b"
+    },
+    {
+        name: "Blue",
+        color: "#2787ff"
+    },
+    {
+        name: "Orange",
+        color: "#ff7a18"
+    },
+    {
+        name: "Purple",
+        color: "#9b3dff"
+    }
+];
+
+
+/* =========================================================
+   GAME STATE
+========================================================= */
+
+let players = 2;
+let diceCount = 1;
+
+let currentPlayer = 0;
+
+let consecutiveSixes = 0;
+
+let rolling = false;
+
+let soundEnabled = true;
+
+let gameStarted = false;
+
+let playerStats = [];
+
+
+/* =========================================================
+   DOM
+========================================================= */
+
+const playerCountElement =
+    document.getElementById("playerCount");
+
+const minusPlayers =
+    document.getElementById("minusPlayers");
+
+const plusPlayers =
+    document.getElementById("plusPlayers");
+
+const startGame =
+    document.getElementById("startGame");
+
+const diceOptions =
+    document.querySelectorAll(".dice-option");
+
+const diceContainer =
+    document.getElementById("diceContainer");
+
+const rollButton =
+    document.getElementById("rollButton");
+
+const turnName =
+    document.getElementById("turnName");
+
+const turnDot =
+    document.getElementById("turnDot");
+
+const turnBanner =
+    document.getElementById("turnBanner");
+
+const diceInfo =
+    document.getElementById("diceInfo");
+
+const statusElement =
+    document.getElementById("status");
+
+const historyList =
+    document.getElementById("historyList");
+
+const playerCards =
+    document.getElementById("playerCards");
+
+const playersLegend =
+    document.getElementById("playersLegend");
+
+const soundToggle =
+    document.getElementById("soundToggle");
+
+
+/* =========================================================
+   PLAYER SETUP
+========================================================= */
+
+function updatePlayerCount() {
+
+    playerCountElement.textContent = players;
+
+}
+
+
+minusPlayers.addEventListener("click", () => {
+
+    if (players > 2) {
+
+        players--;
+
+        updatePlayerCount();
+
+    }
+
+});
+
+
+plusPlayers.addEventListener("click", () => {
+
+    if (players < 6) {
+
+        players++;
+
+        updatePlayerCount();
+
+    }
+
+});
+
+
+/* =========================================================
+   DICE COUNT
+========================================================= */
+
+diceOptions.forEach(button => {
+
+    button.addEventListener("click", () => {
+
+        diceOptions.forEach(b =>
+            b.classList.remove("active")
+        );
+
+        button.classList.add("active");
+
+        diceCount =
+            Number(button.dataset.dice);
+
+        diceInfo.textContent =
+            diceCount === 1
+                ? "1 Dice"
+                : "2 Dice";
+
+        createDice();
+
+    });
+
+});
+
+
+/* =========================================================
+   CREATE DICE
+========================================================= */
+
+function createDice() {
+
+    diceContainer.innerHTML = "";
+
+    for (let i = 0; i < diceCount; i++) {
+
+        const die =
+            document.createElement("div");
+
+        die.className = "die";
+
+        for (let j = 0; j < 9; j++) {
+
+            const pip =
+                document.createElement("div");
+
+            pip.className = "pip";
+
+            die.appendChild(pip);
+
+        }
+
+        diceContainer.appendChild(die);
+
+    }
+
+}
+
+
+/* =========================================================
+   DICE FACE
+========================================================= */
+
+const facePositions = {
+
+    1: [4],
+
+    2: [0, 8],
+
+    3: [0, 4, 8],
+
+    4: [0, 2, 6, 8],
+
+    5: [0, 2, 4, 6, 8],
+
+    6: [0, 2, 3, 5, 6, 8]
+
+};
+
+
+function showFace(die, number) {
+
+    const pips =
+        die.querySelectorAll(".pip");
+
+    pips.forEach((pip, index) => {
+
+        pip.style.opacity =
+            facePositions[number].includes(index)
+                ? "1"
+                : "0";
+
+    });
+
+}
+
+
+/* =========================================================
+   RANDOM NUMBER
+========================================================= */
+
+function randomDiceNumber() {
+
+    return Math.floor(
+        Math.random() * 6
+    ) + 1;
+
+}
+
+
+/* =========================================================
+   SOUND ENGINE
+========================================================= */
+
+let audioContext = null;
+
+
+function getAudioContext() {
+
+    if (!audioContext) {
+
+        audioContext =
+            new (
+                window.AudioContext ||
+                window.webkitAudioContext
+            )();
+
+    }
+
+    return audioContext;
+
+}
+
+
+function playDiceSound() {
+
+    if (!soundEnabled) {
+        return;
+    }
+
+    const ctx =
+        getAudioContext();
+
+    const now =
+        ctx.currentTime;
+
+    /*
+       Multiple short noise bursts
+       create a dice-shaking sound.
+    */
+
+    for (let i = 0; i < 7; i++) {
+
+        const start =
+            now + i * 0.075;
+
+        const duration = 0.055;
+
+        const buffer =
+            ctx.createBuffer(
+                1,
+                ctx.sampleRate * duration,
+                ctx.sampleRate
+            );
+
+        const data =
+            buffer.getChannelData(0);
+
+        for (let j = 0; j < data.length; j++) {
+
+            data[j] =
+                (Math.random() * 2 - 1)
+                *
+                Math.pow(
+                    1 - j / data.length,
+                    2
+                );
+
+        }
+
+        const source =
+            ctx.createBufferSource();
+
+        source.buffer = buffer;
+
+        const filter =
+            ctx.createBiquadFilter();
+
+        filter.type = "bandpass";
+
+        filter.frequency.value =
+            900 + Math.random() * 800;
+
+        filter.Q.value = 1.2;
+
+        const gain =
+            ctx.createGain();
+
+        gain.gain.setValueAtTime(
+            0.0001,
+            start
+        );
+
+        gain.gain.exponentialRampToValueAtTime(
+            0.22,
+            start + 0.008
+        );
+
+        gain.gain.exponentialRampToValueAtTime(
+            0.0001,
+            start + duration
+        );
+
+        source
+            .connect(filter)
+            .connect(gain)
+            .connect(ctx.destination);
+
+        source.start(start);
+        source.stop(start + duration);
+    }
+
+}
+
+
+/* =========================================================
+   FINAL DICE IMPACT SOUND
+========================================================= */
+
+function playDiceImpact() {
+
+    if (!soundEnabled) {
+        return;
+    }
+
+    const ctx =
+        getAudioContext();
+
+    const oscillator =
+        ctx.createOscillator();
+
+    const gain =
+        ctx.createGain();
+
+    oscillator.type = "triangle";
+
+    oscillator.frequency.setValueAtTime(
+        140,
+        ctx.currentTime
+    );
+
+    oscillator.frequency.exponentialRampToValueAtTime(
+        70,
+        ctx.currentTime + .12
+    );
+
+    gain.gain.setValueAtTime(
+        .18,
+        ctx.currentTime
+    );
+
+    gain.gain.exponentialRampToValueAtTime(
+        .001,
+        ctx.currentTime + .13
+    );
+
+    oscillator
+        .connect(gain)
+        .connect(ctx.destination);
+
+    oscillator.start();
+
+    oscillator.stop(
+        ctx.currentTime + .13
+    );
+
+}
+
+
+/* =========================================================
+   INITIALIZE PLAYERS
+========================================================= */
+
+function initializePlayers() {
+
+    playerStats = [];
+
+    for (let i = 0; i < players; i++) {
+
+        playerStats.push({
+            ...playerColors[i],
+            sixes: 0,
+            rolls: 0
+        });
+
+    }
+
+    currentPlayer = 0;
+
+    consecutiveSixes = 0;
+
+    gameStarted = true;
+
+    historyList.innerHTML = "";
+
+    renderPlayers();
+
+    updateTurn();
+
+    createDice();
+
+    statusElement.className =
+        "status";
+
+    statusElement.textContent =
+        "Press SPACE, ENTER or the button to roll.";
+
+}
+
+
+/* =========================================================
+   RENDER PLAYER LEGEND
+========================================================= */
+
+function renderPlayers() {
+
+    playersLegend.innerHTML = "";
+
+    playerStats.forEach(player => {
+
+        const item =
+            document.createElement("div");
+
+        item.innerHTML = `
+            <span
+                class="player-dot"
+                style="background:${player.color}">
+            </span>
+            <span class="player-name">
+                ${player.name}
+            </span>
+        `;
+
+        playersLegend.appendChild(item);
+
+    });
+
+
+    playerCards.innerHTML = "";
+
+    playerStats.forEach((player, index) => {
+
+        const card =
+            document.createElement("div");
+
+        card.className =
+            "player-card";
+
+        card.style.setProperty(
+            "--player-color",
+            player.color
+        );
+
+        card.dataset.player = index;
+
+        card.innerHTML = `
+
+            <div class="pawn"></div>
+
+            <div class="player-card-name">
+                ${player.name}
+            </div>
+
+            <div class="six-count">
+                Sixes
+                <strong>
+                    ${player.sixes}
+                </strong>
+            </div>
+        `;
+
+        playerCards.appendChild(card);
+
+    });
+
+}
+
+
+/* =========================================================
+   UPDATE TURN
+========================================================= */
+
+function updateTurn() {
+
+    const player =
+        playerStats[currentPlayer];
+
+    turnName.textContent =
+        player.name;
+
+    turnDot.style.background =
+        player.color;
+
+    turnDot.style.boxShadow =
+        `0 0 15px ${player.color}`;
+
+    turnBanner.style.setProperty(
+        "--current-color",
+        player.color
+    );
+
+
+    document
+        .querySelectorAll(".player-card")
+        .forEach((card, index) => {
+
+            card.classList.toggle(
+                "active",
+                index === currentPlayer
+            );
+
+        });
+
+
+    document
+        .getElementById("six1")
+        .classList.toggle(
+            "active",
+            consecutiveSixes >= 1
+        );
+
+    document
+        .getElementById("six2")
+        .classList.toggle(
+            "active",
+            consecutiveSixes >= 2
+        );
+
+    document
+        .getElementById("six3")
+        .classList.toggle(
+            "active",
+            consecutiveSixes >= 3
+        );
+
+}
+
+
+/* =========================================================
+   ADD HISTORY
+========================================================= */
+
+function addHistory(player, results, message = "") {
+
+    const item =
+        document.createElement("div");
+
+    item.className =
+        "history-item";
+
+    const resultText =
+        results.join(" + ");
+
+    item.innerHTML = `
+
+        <span>
+            <span
+                class="player-dot"
+                style="background:${player.color}">
+            </span>
+
+            ${player.name}
+        </span>
+
+        <span
+            class="history-result"
+            style="color:${player.color}">
+            ${resultText}
+        </span>
+    `;
+
+    historyList.prepend(item);
+
+
+    if (message) {
+
+        const messageItem =
+            document.createElement("div");
+
+        messageItem.className =
+            "history-item";
+
+        messageItem.style.color =
+            "#ff6670";
+
+        messageItem.innerHTML =
+            message;
+
+        historyList.prepend(
+            messageItem
+        );
+
+    }
+
+
+    while (
+        historyList.children.length > 8
+    ) {
+
+        historyList.lastChild.remove();
+
+    }
+
+}
+
+
+/* =========================================================
+   ROLL ANIMATION
+========================================================= */
+
+function animateDice(finalResults) {
+
+    return new Promise(resolve => {
+
+        const dice =
+            [...document.querySelectorAll(".die")];
+
+        dice.forEach((die, index) => {
+
+            die.classList.remove("rolling");
+
+            /*
+               Force browser reflow so animation
+               can restart every roll.
+            */
+
+            void die.offsetWidth;
+
+            die.classList.add("rolling");
+
+            /*
+               During animation show random faces.
+            */
+
+            const interval =
+                setInterval(() => {
+
+                    showFace(
+                        die,
+                        randomDiceNumber()
+                    );
+
+                }, 90);
+
+
+            setTimeout(() => {
+
+                clearInterval(interval);
+
+                showFace(
+                    die,
+                    finalResults[index]
+                );
+
+            }, 800);
+
+        });
+
+
+        setTimeout(() => {
+
+            dice.forEach(die => {
+
+                die.classList.remove(
+                    "rolling"
+                );
+
+            });
+
+            resolve();
+
+        }, 850);
+
+    });
+
+}
+
+
+/* =========================================================
+   ROLL GAME
+========================================================= */
+
+async function rollDice() {
+
+    if (!gameStarted) {
+
+        initializePlayers();
+
+    }
+
+    if (rolling) {
+        return;
+    }
+
+    rolling = true;
+
+    rollButton.disabled = true;
+
+    statusElement.className =
+        "status";
+
+    statusElement.textContent =
+        `${playerStats[currentPlayer].name} is rolling...`;
+
+    playDiceSound();
+
+
+    const results = [];
+
+    for (let i = 0; i < diceCount; i++) {
+
+        results.push(
+            randomDiceNumber()
+        );
+
+    }
+
+
+    await animateDice(results);
+
+    playDiceImpact();
+
+
+    const player =
+        playerStats[currentPlayer];
+
+    player.rolls++;
+
+
+    /*
+       A roll containing at least one 6
+       counts as a six for the 3-six rule.
+    */
+
+    const rolledSix =
+        results.includes(6);
+
+
+    if (rolledSix) {
+
+        consecutiveSixes++;
+
+        player.sixes++;
+
+    } else {
+
+        consecutiveSixes = 0;
+
+    }
+
+
+    renderPlayers();
+
+    updateTurn();
+
+    addHistory(
+        player,
+        results
+    );
+
+
+    /* =====================================================
+       THREE SIXES
+    ===================================================== */
+
+    if (consecutiveSixes >= 3) {
+
+        statusElement.className =
+            "status error";
+
+        statusElement.textContent =
+            `⚠️ ${player.name} rolled 6 three times! ` +
+            `Turn skipped — ${player.name} cannot move.`;
+
+        addHistory(
+            player,
+            [],
+            `⚠️ Three 6s — ${player.name}'s turn skipped.`
+        );
+
+
+        consecutiveSixes = 0;
+
+
+        /*
+           Give a small delay before switching
+           so the player can see the message.
+        */
+
+        setTimeout(() => {
+
+            nextPlayer();
+
+        }, 1300);
+
+        return;
+
+    }
+
+
+    /* =====================================================
+       SIX = EXTRA TURN
+    ===================================================== */
+
+    if (rolledSix) {
+
+        statusElement.className =
+            "status extra";
+
+        statusElement.textContent =
+            `⭐ ${player.name} rolled a 6! ` +
+            `Roll again.`;
+
+        rolling = false;
+
+        rollButton.disabled = false;
+
+        return;
+
+    }
+
+
+    /* =====================================================
+       NORMAL TURN
+    ===================================================== */
+
+    statusElement.className =
+        "status";
+
+    statusElement.textContent =
+        `${player.name} rolled ` +
+        `${results.join(" + ")}. ` +
+        `Turn moves to the next player.`;
+
+
+    setTimeout(() => {
+
+        nextPlayer();
+
+    }, 850);
+
+}
+
+
+/* =========================================================
+   NEXT PLAYER
+========================================================= */
+
+function nextPlayer() {
+
+    consecutiveSixes = 0;
+
+    currentPlayer++;
+
+    if (currentPlayer >= players) {
+
+        currentPlayer = 0;
+
+    }
+
+    updateTurn();
+
+    statusElement.className =
+        "status";
+
+    statusElement.textContent =
+        `${playerStats[currentPlayer].name}'s turn. ` +
+        `Press SPACE or ENTER to roll.`;
+
+    rolling = false;
+
+    rollButton.disabled = false;
+
+}
+
+
+/* =========================================================
+   START GAME
+========================================================= */
+
+startGame.addEventListener(
+    "click",
+    () => {
+
+        initializePlayers();
+
+    }
+);
+
+
+/* =========================================================
+   ROLL BUTTON
+========================================================= */
+
+rollButton.addEventListener(
+    "click",
+    rollDice
+);
+
+
+/* =========================================================
+   SOUND TOGGLE
+========================================================= */
+
+soundToggle.addEventListener(
+    "click",
+    () => {
+
+        soundEnabled =
+            !soundEnabled;
+
+        soundToggle.classList.toggle(
+            "active",
+            soundEnabled
+        );
+
+    }
+);
+
+
+/* =========================================================
+   KEYBOARD
+========================================================= */
+
+document.addEventListener(
+    "keydown",
+    event => {
+
+        if (
+            event.code === "Space" ||
+            event.code === "Enter"
+        ) {
+
+            /*
+               Prevent space from scrolling page.
+            */
+
+            event.preventDefault();
+
+            if (!rolling) {
+
+                rollDice();
+
+            }
+
+        }
+
+    }
+);
+
+
+/* =========================================================
+   INITIAL UI
+========================================================= */
+
+initializePlayers();
+
+</script>
+
+</body>
+</html>
